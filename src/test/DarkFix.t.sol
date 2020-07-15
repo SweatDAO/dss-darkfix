@@ -1,13 +1,13 @@
-pragma solidity ^0.5.15;
+pragma solidity ^0.6.7;
 
 import "ds-test/test.sol";
 import "ds-math/math.sol";
 
-import {DarkFix} from "./DarkFix.sol";
+import {DarkFix} from "../DarkFix.sol";
 
-import "lib/dss-interfaces/src/dapp/DSPauseAbstract.sol";
-import "lib/dss-interfaces/src/dapp/DSChiefAbstract.sol";
-import "lib/dss-interfaces/src/dss/MKRAbstract.sol";
+import "lib/geb-interfaces/src/dapp/DSPauseAbstract.sol";
+import "lib/geb-interfaces/src/dapp/VoteQuorumAbstract.sol";
+import "lib/geb-interfaces/src/geb/ProtocolTokenAbstract.sol";
 
 contract Hevm {
     function warp(uint256) public;
@@ -20,10 +20,10 @@ contract DarkFixTest is DSTest, DSMath {
     DSPauseAbstract pause = DSPauseAbstract(
         0x8754E6ecb4fe68DaA5132c2886aB39297a5c7189
     );
-    MKRAbstract gov = MKRAbstract(
+    ProtocolTokenAbstract prot = ProtocolTokenAbstract(
         0xAaF64BFCC32d0F15873a02163e7E500671a4ffcD
     );
-    DSChiefAbstract chief = DSChiefAbstract(
+    VoteQuorumAbstract voteQuorum = VoteQuorumAbstract(
         0xbBFFC76e94B34F72D96D054b31f6424249c1337d
     );
 
@@ -34,7 +34,7 @@ contract DarkFixTest is DSTest, DSMath {
     // hard-coded variable for now
     bytes32 public salt = hex"3133333700000000000000000000000000000000000000000000000000000000";
 
-    bytes20 constant CHEAT_CODE = 
+    bytes20 constant CHEAT_CODE =
         bytes20(uint160(uint256(keccak256('hevm cheat code'))));
 
     function setUp() public {
@@ -43,19 +43,19 @@ contract DarkFixTest is DSTest, DSMath {
     }
 
     function vote(DarkFix _spell) private {
-        if (chief.hat() != address(_spell)) {
-            gov.approve(address(chief), uint256(-1));
-            chief.lock(sub(gov.balanceOf(address(this)), 1 ether));
+        if (voteQuorum.votedAuthority() != address(_spell)) {
+            prot.approve(address(voteQuorum), uint256(-1));
+            voteQuorum.addVotingWeight(sub(prot.balanceOf(address(this)), 1 ether));
 
             assertTrue(!_spell.done());
 
-            address[] memory yays = new address[](1);
-            yays[0] = address(_spell);
+            address[] memory candidates = new address[](1);
+            candidates[0] = address(_spell);
 
-            chief.vote(yays);
-            chief.lift(address(_spell));
+            voteQuorum.vote(candidates);
+            voteQuorum.electCandidate(address(_spell));
         }
-        assertEq(chief.hat(), address(_spell));
+        assertEq(voteQuorum.votedAuthority(), address(_spell));
     }
 
     function scheduleWaitAndCast(DarkFix _spell) public {

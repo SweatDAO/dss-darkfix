@@ -1,10 +1,10 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.7;
 
 contract Create2 {
 
-    function deploy(bytes32 salt, bytes memory bytecode) 
+    function deploy(bytes32 salt, bytes memory bytecode)
         public
-        returns (address) 
+        returns (address)
     {
         address addr;
         assembly {
@@ -14,18 +14,18 @@ contract Create2 {
         return addr;
     }
 
-    function computeAddress(bytes32 salt, bytes memory bytecode) 
+    function computeAddress(bytes32 salt, bytes memory bytecode)
         public
-        view 
-        returns (address) 
+        view
+        returns (address)
     {
         return computeAddress(salt, bytecode, address(this));
     }
 
-    function computeAddress(bytes32 salt, bytes memory bytecodeHash, address deployer) 
+    function computeAddress(bytes32 salt, bytes memory bytecodeHash, address deployer)
         public
-        pure 
-        returns (address) 
+        pure
+        returns (address)
     {
         bytes32 bytecodeHashHash = keccak256(bytecodeHash);
         bytes32 _data = keccak256(

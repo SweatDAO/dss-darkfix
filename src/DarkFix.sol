@@ -1,8 +1,8 @@
-pragma solidity ^0.5.15;
+pragma solidity ^0.6.7;
 
 import "ds-math/math.sol";
 
-import "lib/dss-interfaces/src/dapp/DSPauseAbstract.sol";
+import "lib/geb-interfaces/src/dapp/DSPauseAbstract.sol";
 
 contract DeployLike {
     function deploy(bytes32, bytes memory) public returns (address);
